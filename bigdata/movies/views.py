@@ -1,4 +1,17 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import HttpResponse, JsonResponse
+import datetime, pymongo, json
+from .models import Movie, Genre
+from django.db import connections
+from django.db.models import Count
+import mimetypes
 
-# Create your views here.
+# from .forms import PostForm, CommentForm
 
+def index(request):        
+    return render(request, 'movies/index.html')
+
+def genres_count(request):
+    filename = '/Users/move0/dev/django/bigdata/bigdata/static/movies/data/recent_genre.csv'
+    fsock = open(filename,"rb")
+    return HttpResponse(fsock, content_type=mimetypes.guess_type(filename)[0]) 

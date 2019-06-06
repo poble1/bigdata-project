@@ -1,5 +1,7 @@
 # from django.db import models
 from djongo import models
+from django.conf import settings as djangoSettings
+import os,csv
 # Create your models here.
 
 class ProductionCompany(models.Model):
@@ -33,6 +35,40 @@ class Genre(models.Model):
     def __str__(self):
         return self.name
 
+    def count_genres(self, queryset):
+        genres = []
+
+        for movie in queryset:
+            m_genres = movie.genres(manager='objects').all()
+            for genre in m_genres:
+                if len(genres) == 0:
+                    new_one = {'genre' : genre.name, 'count' : 1}
+                    genres.append(new_one)
+                    print(genre.name + " Added // genres len : " + str(len(genres)))
+                else:
+                    length = len(genres)
+                    count = 1
+                    for g in genres:
+                        if genre.name == g['genre']:
+                            g['count'] += 1  
+                            print(genre.name + " + 1")
+                            break
+                        elif count == length:
+                            new_one = {'genre' : genre.name, 'count' : 1}
+                            genres.append(new_one)
+                            print(genre.name + " Added // genres len : " + str(len(genres)))
+                            break
+                        else:
+                            count+=1
+        import csv    
+        f = open('/Users/move0/dev/django/bigdata/bigdata/static/movies/data/recent_genre.csv', 'w', encoding='utf-8', newline='')
+        wr = csv.writer(f)
+        wr.writerow(['name', 'count'])
+        for line in genres:
+            newline = [line['genre'], line['count']]
+            wr.writerow(newline)
+        f.close()
+        return
 
 class Collection(models.Model):    
     collection_id = models.IntegerField(default=0)
@@ -66,7 +102,10 @@ class Movie(models.Model):
     def __str__(self):
         return self.title
 
+class User(models.Model):
+    name = models.CharField(max_length=200)
+
 class Rating(models.Model):
-    user_id = models.IntegerField()
-    movie_id = models.IntegerField()
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, default=None, related_name="ratings")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, default=None, related_name="ratings")
     rating = models.FloatField(default=0)
